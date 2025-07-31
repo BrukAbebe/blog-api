@@ -5,11 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Store a newly created post in storage.
      *
@@ -26,13 +29,13 @@ class PostController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Post created successfully',
+                'status' => 'success',
                 'post' => $post
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to create post',
-                'error' => $e->getMessage()
+                'status' => 'error',
+                'errors' => $e->getMessage()
             ], 500);
         }
     }
@@ -47,72 +50,18 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, Post $post): JsonResponse
     {
         try {
-            if ($post->user_id !== Auth::id()) {
-                return response()->json([
-                    'message' => 'Unauthorized to update this post'
-                ], 403);
-            }
+            $this->authorize('update', $post);
 
             $post->update($request->only(['title', 'text']));
 
             return response()->json([
-                'message' => 'Post updated successfully',
+                'status' => 'success',
                 'post' => $post->fresh()
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update post',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get all posts.
-     *
-     * @return JsonResponse
-     */
-    public function index(): JsonResponse
-    {
-        try {
-            $posts = Post::paginate(10);
-
-            return response()->json([
-                'message' => 'Posts retrieved successfully',
-                'current_page' => $posts->currentPage(),
-                'data' => $posts->items(),
-                'last_page' => $posts->lastPage(),
-                'total' => $posts->total()
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to retrieve posts',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * Get all posts for the authenticated user.
-     *
-     * @return JsonResponse
-     */
-    public function userPosts(): JsonResponse
-    {
-        try {
-            $posts = Post::where('user_id', Auth::id())->paginate(10);
-
-            return response()->json([
-                'message' => 'User posts retrieved successfully',
-                'current_page' => $posts->currentPage(),
-                'data' => $posts->items(),
-                'last_page' => $posts->lastPage(),
-                'total' => $posts->total()
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to retrieve user posts',
-                'error' => $e->getMessage()
+                'status' => 'error',
+                'errors' => $e->getMessage()
             ], 500);
         }
     }
@@ -126,21 +75,90 @@ class PostController extends Controller
     public function destroy(Post $post): JsonResponse
     {
         try {
-            if ($post->user_id !== Auth::id()) {
-                return response()->json([
-                    'message' => 'Unauthorized to delete this post'
-                ], 403);
-            }
+            $this->authorize('delete', $post);
 
             $post->delete();
 
             return response()->json([
-                'message' => 'Post deleted successfully'
+                'status' => 'success'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to delete post',
-                'error' => $e->getMessage()
+                'status' => 'error',
+                'errors' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all posts.
+     *
+     * @return JsonResponse
+     */
+    public function index(): JsonResponse
+    {
+        try {
+            $posts = Post::withCount(['comments', 'likes'])->paginate(10);
+
+            return response()->json([
+                'status' => 'success',
+                'current_page' => $posts->currentPage(),
+                'data' => $posts->items(),
+                'last_page' => $posts->lastPage(),
+                'total' => $posts->total()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all posts for the authenticated user.
+     *
+     * @return JsonResponse
+     */
+    public function userPosts(): JsonResponse
+    {
+        try {
+            $posts = Post::where('user_id', Auth::id())->withCount(['comments', 'likes'])->paginate(10);
+
+            return response()->json([
+                'status' => 'success',
+                'current_page' => $posts->currentPage(),
+                'data' => $posts->items(),
+                'last_page' => $posts->lastPage(),
+                'total' => $posts->total()
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get a single post by ID.
+     *
+     * @param Post $post
+     * @return JsonResponse
+     */
+    public function show(Post $post): JsonResponse
+    {
+        try {
+            $post->loadCount(['comments', 'likes']);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $post
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $e->getMessage()
             ], 500);
         }
     }
