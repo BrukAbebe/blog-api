@@ -17,24 +17,13 @@ class UpdatePostRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
-       return [
-            'title' => ['sometimes', 'string', 'max:255'],
-            'text' => ['sometimes', 'string'],
-        ];
-    }
-    /**
-     * Get custom error messages for validator errors.
-     *
-     * @return array
-     */
-    public function messages(): array
-    {
         return [
-            'title.max' => 'The post title must not exceed 255 characters.',
+            'title' => 'sometimes|string|max:255',
+            'text' => 'sometimes|string',
         ];
     }
 }

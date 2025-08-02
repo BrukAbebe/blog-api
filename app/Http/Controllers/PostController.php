@@ -5,14 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
-    use AuthorizesRequests;
-
     /**
      * Store a newly created post in storage.
      *
@@ -50,8 +47,6 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, Post $post): JsonResponse
     {
         try {
-            $this->authorize('update', $post);
-
             $post->update($request->only(['title', 'text']));
 
             return response()->json([
@@ -75,8 +70,6 @@ class PostController extends Controller
     public function destroy(Post $post): JsonResponse
     {
         try {
-            $this->authorize('delete', $post);
-
             $post->delete();
 
             return response()->json([

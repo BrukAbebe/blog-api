@@ -6,14 +6,11 @@ use App\Http\Requests\StoreCommentRequest;
 use App\Http\Requests\UpdateCommentRequest;
 use App\Models\Comment;
 use App\Models\Post;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class CommentController extends Controller
 {
-    use AuthorizesRequests;
-
     /**
      * Store a newly created comment in storage.
      *
@@ -52,8 +49,6 @@ class CommentController extends Controller
     public function update(UpdateCommentRequest $request, Comment $comment): JsonResponse
     {
         try {
-            $this->authorize('update', $comment);
-
             $comment->update($request->only(['comment']));
 
             return response()->json([
@@ -77,8 +72,6 @@ class CommentController extends Controller
     public function destroy(Comment $comment): JsonResponse
     {
         try {
-            $this->authorize('delete', $comment);
-
             $comment->delete();
 
             return response()->json([

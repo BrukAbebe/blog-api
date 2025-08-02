@@ -29,6 +29,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->registerPolicies();
+         $this->registerPolicies();
+
+        // Register Spatie Permission with Sanctum guard
+        Gate::define('hasPermission', function ($user, $permission) {
+            return $user->hasPermissionTo($permission, 'sanctum');
+        });
     }
 }

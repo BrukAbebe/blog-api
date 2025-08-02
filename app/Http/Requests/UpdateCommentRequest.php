@@ -17,24 +17,12 @@ class UpdateCommentRequest extends FormRequest
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
      */
     public function rules(): array
     {
         return [
-            'comment' => ['sometimes', 'string', 'max:1000'],
-        ];
-    }
-
-    /**
-     * Get custom error messages for validator errors.
-     *
-     * @return array
-     */
-    public function messages(): array
-    {
-        return [
-            'comment.max' => 'The comment must not exceed 1000 characters.',
+            'comment' => 'sometimes|string',
         ];
     }
 }

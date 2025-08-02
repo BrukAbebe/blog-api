@@ -6,14 +6,11 @@ use App\Http\Requests\StoreLikeRequest;
 use App\Http\Requests\DestroyLikeRequest;
 use App\Models\Like;
 use App\Models\Post;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 class LikeController extends Controller
 {
-    use AuthorizesRequests;
-
     /**
      * Like a post.
      *
@@ -58,8 +55,6 @@ class LikeController extends Controller
                     'errors' => 'Like not found'
                 ], 404);
             }
-
-            $this->authorize('delete', $like);
 
             $like->delete();
 
